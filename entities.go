@@ -8,13 +8,30 @@ import (
 type Entity interface {
 	update(g *Game)
 	render(s *ebiten.Image)
-	getCollisionInfo() CollisionInfo
+	getCollisionInfo() *CollisionInfo
+	determineCollision(info CollisionInfo) (bool, *Vect)
+	isAlive() bool
 }
 
+type CollisionType int
+
+const (
+	static CollisionType = iota
+	destructible
+	moveable
+)
+
 type CollisionInfo struct {
+	pos           Vect
+	prevPos       Vect
+	previousBoxes []CollisionBox
+	boxes         []CollisionBox
+	collisionType CollisionType
 }
 
 type CollisionBox struct {
+	topLeft  Vect
+	topRight Vect
 }
 
 type Wall struct {
@@ -30,10 +47,22 @@ func (w *Wall) render(s *ebiten.Image) {
 	// No rendering done. Walls unseen.
 }
 
+func (w *Wall) getCollisionInfo() CollisionInfo {
+	return CollisionInfo{}
+}
+
+func (w *Wall) determineCollision() (bool, Vect) {
+	return true, Vect{}
+}
+func (w *Wall) isAlive() bool {
+	return true
+}
+
 type Player struct {
-	pos   *Vect
-	vel   *Vect
-	image *ebiten.Image
+	prevPos Vect
+	pos     Vect
+	vel     Vect
+	image   *ebiten.Image
 }
 
 func (p *Player) render(s *ebiten.Image) {
@@ -64,12 +93,12 @@ func (p *Player) update(g *Game) {
 		dv := moveDir.unitVect()
 		// Multiply by acceleration
 		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-			dv.mult(BOOSTACCELERATION)
+			dv = dv.mult(BOOSTACCELERATION)
 		} else {
-			dv.mult(PLAYERACCELERATION)
+			dv = dv.mult(PLAYERACCELERATION)
 		}
 		// Apply
-		p.vel.add(dv)
+		p.vel = *p.vel.add(dv)
 
 	}
 
@@ -77,13 +106,26 @@ func (p *Player) update(g *Game) {
 	// Copy the direction of velocity, reverse it and multiply it
 	velMag := p.vel.mag()
 	dragVect := &Vect{p.vel.x, p.vel.y}
-	dragVect.unitVect()
+	dragVect = dragVect.unitVect()
 	if moveDir.mag() > 0.0 {
-		dragVect.mult(-DRAGCOEFF * velMag * velMag)
+		dragVect = dragVect.mult(-DRAGCOEFF * velMag * velMag)
 	} else {
-		dragVect.mult(-STANDSTILLDRAGCOEFF * velMag * velMag)
+		dragVect = dragVect.mult(-STANDSTILLDRAGCOEFF * velMag * velMag)
 	}
-	p.vel.add(dragVect)
+	p.vel = *p.vel.add(dragVect)
 
-	p.pos.add(p.vel)
+	p.pos = *p.pos.add(&p.vel)
+}
+
+func (p *Player) getCollisionInfo() *CollisionInfo {
+	prevHitBox := CollisionBox{p.prevPos, *p.prevPos.copy().add(&Vect{10, 10})}
+	prevHitBoxes := make([]CollisionBox, 1)
+	prevHitBoxes = append(prevHitBoxes, prevHitBox)
+
+	currentHitBox := CollisionBox{p.pos, *p.pos.copy().add(&Vect{10, 10})}
+	currentHitBoxes := make([]CollisionBox, 1)
+	currentHitBoxes = append(currentHitBoxes, currentHitBox)
+
+	collisionInfo := CollisionInfo{p.pos, p.prevPos, prevHitBoxes, currentHitBoxes, moveable}
+	return &collisionInfo
 }

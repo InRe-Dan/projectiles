@@ -45,8 +45,8 @@ func main() {
 	g.p = p
 	g.p.image = ebiten.NewImage(10, 10)
 	g.p.image.Fill(color.RGBA{50, 50, 50, 255})
-	g.p.pos = &Vect{100, 100}
-	g.p.vel = &Vect{0, 0}
+	g.p.pos = Vect{100, 100}
+	g.p.vel = Vect{0, 0}
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
 	}

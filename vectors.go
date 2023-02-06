@@ -9,14 +9,16 @@ type Vect struct {
 	y float64
 }
 
-func (v1 *Vect) add(v2 *Vect) {
-	v1.x += v2.x
-	v1.y += v2.y
+func (v *Vect) copy() *Vect {
+	return &Vect{v.x, v.y}
 }
 
-func (v *Vect) mult(scalar float64) {
-	v.x *= scalar
-	v.y *= scalar
+func (v1 *Vect) add(v2 *Vect) *Vect {
+	return &Vect{v1.x + v2.x, v1.y + v2.y}
+}
+
+func (v *Vect) mult(scalar float64) *Vect {
+	return &Vect{v.x * scalar, v.y * scalar}
 }
 
 func (v *Vect) mag() float64 {
@@ -28,11 +30,11 @@ func (v *Vect) unitVect() *Vect {
 	return &Vect{v.x / magnitude, v.y / magnitude}
 }
 
-func (v *Vect) limitMag(limit float64) {
+func (v *Vect) limitMag(limit float64) *Vect {
 	if v.mag() > limit {
 		new := v.unitVect()
-		new.mult(limit)
-		v.x = new.x
-		v.y = new.y
+		new = new.mult(limit)
+		return new
 	}
+	return v.copy()
 }

@@ -1,27 +1,30 @@
 package main
 
 import (
-	"image/color"
-
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Entity interface {
-	update(g Game)
-	render(s ebiten.Image)
+	update(g *Game)
+	render(s *ebiten.Image)
+	getCollisionInfo() CollisionInfo
+}
+
+type CollisionInfo struct {
+}
+
+type CollisionBox struct {
 }
 
 type Wall struct {
-	colour color.Color
-	pos    Vect
-	size   Vect
+	pos int
+	dir Vect
 }
 
-func (w *Wall) update() {
+func (w *Wall) update(g *Game) {
 	// Repel player if collided with
-
 }
 
-func (w *Wall) render() {
+func (w *Wall) render(s *ebiten.Image) {
 	// No rendering done. Walls unseen.
 }

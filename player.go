@@ -11,7 +11,7 @@ type Player struct {
 	image *ebiten.Image
 }
 
-func (p *Player) render(s ebiten.Image) {
+func (p *Player) render(s *ebiten.Image) {
 	matrix := ebiten.GeoM{}
 	matrix.Translate(p.pos.x, p.pos.y)
 	s.DrawImage(p.image, &ebiten.DrawImageOptions{GeoM: matrix})

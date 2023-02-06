@@ -28,6 +28,7 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Clear()
+	g.p.render(screen)
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("(%d, %d)\n(%f, %f)\n%f",
 		int(g.p.pos.x), int(g.p.pos.y), (g.p.vel.x), (g.p.vel.y), (g.p.vel.mag())))
 }
